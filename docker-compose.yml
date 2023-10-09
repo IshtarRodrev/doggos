@@ -1,0 +1,44 @@
+version: '3.3'
+
+services:
+  database:
+    container_name: database_doggo
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: doggo_test
+      MYSQL_USER: doggo
+      MYSQL_PASSWORD: alina_mega_pihar_2008
+    ports:
+      - '3307:3306'
+    volumes:
+      - ./mysql:/var/lib/mysql
+  php:
+    container_name: php_doggo
+    restart: always
+    build:
+      context: ./php
+    volumes:
+      - ./app:/var/www/doggo_test
+      - ./logs:/var/log/nginx/
+    depends_on:
+      - database
+    environment:
+      DATABASE_URL: "mysql://doggo:alina_mega_pihar_2008@database:3306/doggo_test?serverVersion=5.7&charset=utf8mb4"
+      APP_ENV: dev
+      APP_DEBUG: 1
+  nginx:
+    container_name: nginx_doggo_test
+    restart: always
+    image: nginx:stable
+    ports:
+      - "81:81"
+    volumes:
+      - ./app:/var/www/doggo_test
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./logs:/var/log/nginx/
+    depends_on:
+      - php
+      - database
